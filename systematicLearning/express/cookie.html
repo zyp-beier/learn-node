@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用于提交cookie的页面</title>
+</head>
+<body>
+<div>
+    <form id="form1" method="post" action="/index.html">
+        <input type="button" value="提交cookie" onclick="cookieTest()">
+    </form>
+</div>
+<form action="">
+    <output id="result"></output>
+</form>
+</body>
+<script>
+    function cookieTest() {
+        const xml = new XMLHttpRequest();
+        xml.open('post','/cookie.html',true);
+        document.cookie = 'name = zhaoyinping';
+        document.cookie = 'age = 22'
+        xml.onload = function (e) {
+            if(this.status===200){
+                document.getElementById('result').innerHTML = this.response
+            }
+        }
+        xml.send()
+    }
+</script>
+</html>

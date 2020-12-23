@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>socket</title>
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io.connect()
+    function setNickname() {
+        socket.emit('set nickname',document.querySelector('#name').value)
+    }
+    function getNickname() {
+        socket.emit('get nickname')
+    }
+    socket.on('send nickname',function (data) {
+        console.log('我的昵称为',data)
+    })
+    socket.on('err',function (data) {
+        console.log('服务器端出错，错误信息为',data)
+    })
+</script>
+<body>
+<div>
+    昵称: <input type="text" placeholder="请输入昵称" id="name">
+    <input type="button" onclick="setNickname()" value='设置昵称'>
+    <input type="button" onclick="getNickname()" value='获取昵称'>
+</div>
+</body>
+</html>

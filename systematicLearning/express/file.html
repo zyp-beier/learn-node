@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>向服务器上传文件</title>
+</head>
+<body>
+<div>
+    <h1>使用bodyParser中间件上传文件</h1>
+    <form action="">
+        <input type="file" id="file" name="file"><br>
+        <input type="button" value="上传文件" onclick="uploadFile()">
+    </form>
+    <output id="result"></output>
+</div>
+</body>
+<script>
+    function uploadFile() {
+let formData = new FormData()
+        let files = document.querySelector('#file').files;
+        console.log(fiels);
+        let file = fiels[0]
+        formData.append('myfile',file)
+        const xml = new XMLHttpRequest()
+        xml.open('POST','/file.html',true)
+        xml.onload = function (e) {
+            if(this.status ==200){
+                document.querySelector('#resule').innerText = this.response
+            }
+        }
+        xml.send(formData)
+    }
+</script>
+</html>

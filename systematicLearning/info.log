@@ -1,0 +1,5 @@
+home foo
+home { name: 'zhaoyinping', age: 18 }
+10 10.5
+NaN
+% 123

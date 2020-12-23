@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>socket</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+<div>
+
+</div>
+<script>
+    const socket = io.connect()
+    socket.on('message',function (data) {
+        console.log(data)
+        socket.send('消息已接受到')
+    })
+    socket.on('disconnect',function () {
+        console.log('服务器断开连接')
+    })
+</script>
+</body>
+</html>

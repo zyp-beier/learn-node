@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>static</title>
+</head>
+<body>
+<div>
+    <div>
+        <input type="text" placeholder="请输入姓名" name="name" id="name"><br>
+        <input type="number" placeholder="请输入年龄" name="age" id="age">
+        <input type="button" value="提交" onclick="submitData()">
+    </div>
+    <div id="result"></div>
+</div>
+</body>
+<script>
+    function submitData() {
+        let obj = {
+            name: document.querySelector('#name').value,
+            age: document.querySelector('#age').value
+        }
+        const xml = new XMLHttpRequest()
+        xml.open('POST','/static.html',true)
+        xml.onload = function (e) {
+            if(this.status == 200){
+                document.getElementById('result').innerHTML = this.response
+            }
+        }
+        xml.send(JSON.stringify(obj))
+    }
+</script>
+</html>

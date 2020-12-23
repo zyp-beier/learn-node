@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>命名空间</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+<div>
+
+</div>
+<script>
+    const chat = io.connect('http://127.0.0.1/chat')
+    const news = io.connect('http://127.0.0.1/news')
+    chat.on('connect',function () {
+        chat.send('hello')
+        // chat.on('message',function (msg) {
+        //     console.log('从chat命名空间接收到的消息' + msg)
+        // })
+        chat.emit('message',123)
+    })
+    news.on('connect',function () {
+        news.emit('send message','heihei')
+        news.on('send message',function (msg) {
+            console.log('从news命名空间接收到的消息' + msg)
+        })
+    })
+</script>
+</body>
+</html>
+

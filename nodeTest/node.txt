@@ -1,0 +1,135 @@
+node app.js 1>info.log将被输出到info.log文件中（1代表重定向标准输出流）
+console.time('同一个参数')  && console.timeEnd('同一个参数')两个方法均使用一个参数,才能正确地统计出开始时间与结束时间之间所经过的毫秒数
+/***************全局对象***************/
+1.global
+在Node.js环境中唯一的全局对象global
+process也是Node.js提供的一个对象，它代表当前Node.js进程
+Node.js进程本身的事件就由process对象来处理。如果我们响应exit事件，就可以在程序即将退出时执行某个回调函数
+// 程序即将退出时的回调函数:
+process.on('exit', function (code) { console.log('about to exit with code: ' + code);});
+判断JavaScript执行环境
+if (typeof(window) === 'undefined') { console.log('node.js');} else { console.log('browser');}
+Node.js不断执行响应事件的JavaScript函数，直到没有任何响应事件的函数可以执行时，Node.js就退出了。
+如果想要在下一次事件响应中执行代码，可以调用process.nextTick()：
+// process.nextTick()将在下一轮事件循环中调用:
+process.nextTick(function () {console.log('nextTick callback!');});
+console.log('nextTick was set!');
+2.使用定时器对象的unref方法取消回调函数的调用；使用定时器对象的ref方法恢复回调函数的调用
+3.使用emit方法手工触发事件
+server.emit('aa','自定义参数1','自定义参数2','自定义参数3')
+server.on('aa',function (arg1,arg2,arg3) { })
+当对继承了EventEmitter类的子类实例对象绑定事件处理函数时，都将触发EventEmitter类的newListener事件(取消事件处理函数亦是如此removeListener)
+二，基本模块
+1.使用require函数加载模块
+require.main变量，用于检测一个模块是否为应用程序中的主模块
+加载模块时将运行模块文件中的每一行代码
+要在模块中对外输出变量，用：module.exports = variable;输出的变量可以是任意对象、函数、数组等等。
+require.resolve('./testModule.js')查询当前目录下模块文件的完整文件名
+console.log(require.cache)缓存了所有已被加载模块的缓存区
+使用__filename变量获取当前文件的完整文件名
+使用__dirname变量获取当前模块文件所在目录的完整绝对路径。
+2.Buffer类
+创建buffer
+1.let buf = new Buffer([1,2,3])
+2.let buf = new Buffer('字符串')
+buffer转字符串
+buffer.toString()
+var StringDecoder = require('string_decoder').StringDecoder
+vat decoder = new StringDecoder()
+decoder.write(buf)
+类方法
+Buffer.isBuffer判断是否是Buffer类
+byteLength方法计算一个指定字符串的字节数
+concat方法用于将几个Buffer对象结合创建为一个新的Buffer对象
+三.fs
+Node.js内置的fs模块就是文件系统模块,负责读写文件,同时提供了异步和同步的方法。
+1>异步读文件
+fs.readFile('sample.txt', 'utf-8', function (err, data) {}
+2>同步读文件
+try {
+    let data = fs.readFileSync('sample.txt', 'utf-8');
+    console.log(data);
+} catch (err)  // 出错了}
+3>写文件
+1>异步
+var data = 'Hello, Node.js';
+fs.writeFile('output.txt', data, function (err) {if (err) {console.log(err);} else {console.log('ok.');}});
+同步
+var data = 'Hello, Node.js';
+fs.writeFileSync('output.txt', data);
+fs.appendFile()追加文件
+创建目录
+fs.mkdir('./bb',function (err) {})
+读取根目录下所有的文件
+fs.readdir('./',function (err,files) {})
+stat 使用stat方法查看文件信息
+如果我们要获取文件大小，创建时间等信息，可以使用fs.stat()，它返回一个Stat对象，能告诉我们文件或目录的详细信息：
+fs.stat('sample.txt', function (err, stat) {});	
+使用exists方法检查文件是否存在
+fs.exists('./message',function (exists) {})
+使用realpath方法获取文件的绝对路径
+fs.realpath('./message',function (err,resolvedPath) {})
+使用utimes方法修改文件的访问时间及修改时间
+fs.utimes('./message',new Date(),new Date(),function (err) {fs.stat('./message',function (err,stats) { })})
+使用rmdir方法删除空目录
+fs.rmdir('./dd',function (err) {})
+使用truncate方法截断文件
+fs.truncate('./message',10,function (err) {
+    fs.stat('./message',function (err,stats) {console.log(stats.size) })
+})
+使用watchFile方法监视文件
+fs.watchFile('./message',function (curr,prev) {
+    if(Date.parse(prev.mtime)!=Date.parse(curr.mtime)){  console.log('message文件内容被修改') }
+})
+使用watch方法监视文件
+let watcher = fs.watch('./message',function (event,filename){watcher.close()    })
+///////////////stream///////////////////////
+使用ReadStream对象读取文件
+使用WriteStream对象写入文件
+const file = fs.createReadStream('./message')
+const out = fs.createWriteStream('./anotherMessage')
+file.on('open',function (fd) {  console.log('开始读取文件')})
+file.on('data',function (data) {
+console.log('读取到数据')
+ console.log(data.toString()) 
+ out.write(data,function () {
+           console.log(data.toString())
+        })})
+file.on('end',function () {console.log('文件已全部读取完毕')})
+file.on('close',function () { console.log('文件被关闭')})
+file.on('error',function () {console.log('文件读取失败')})                  
+暂停并恢复文件的读取
+file.pause() file.resume()
+
+
+
+ 
+//写入数据
+var ws1 = fs.createWriteStream('output1.txt', 'utf-8');
+ws1.write('使用Stream写入文本数据...\n');
+ws1.write('END.');
+ws1.end();
+
+2>pipe
+就像可以把两个水管串成一个更长的水管一样，两个流也可以串起来。一个Readable流和一个Writable流串起来后，所有的数据自动从Readable流进入Writable流，这种操作叫pipe。
+用pipe()把一个文件流和另一个文件流串起来，这样源文件的所有数据就自动写入到目标文件里了，所以，这实际上是一个复制文件的程序
+var rs = fs.createReadStream('sample.txt');
+var ws = fs.createWriteStream('copied.txt');
+rs.pipe(ws);
+3.http
+request对象封装了HTTP请求，我们调用request对象的属性和方法就可以拿到所有HTTP请求的信息
+response对象封装了HTTP响应，我们操作response对象的方法，就可以把HTTP响应返回给浏览器
+// 导入http模块:
+var http = require('http');
+// 创建http server，并传入回调函数:
+var server = http.createServer(function (request, response) {
+    // 回调函数接收request和response对象,
+    // 获得HTTP请求的method和url:
+    console.log(request.method + ': ' + request.url);
+    // 将HTTP响应200写入response, 同时设置Content-Type: text/html:
+    response.writeHead(200, {'Content-Type': 'text/html'});
+    // 将HTTP响应的HTML内容写入response:
+    response.end('<h1>Hello world!</h1>');
+});
+// 让服务器监听8080端口:
+server.listen(8080);

@@ -1,0 +1,155 @@
+要在模块中对外输出变量，用：
+module.exports = variable;
+输出的变量可以是任意对象、函数、数组等等。
+
+要引入其他模块输出的对象，用：
+var foo = require('other_module');
+一.Node.js
+1.global
+在Node.js环境中唯一的全局对象global
+2。process
+process也是Node.js提供的一个对象，它代表当前Node.js进程
+1>Node.js不断执行响应事件的JavaScript函数，直到没有任何响应事件的函数可以执行时，Node.js就退出了。
+如果想要在下一次事件响应中执行代码，可以调用process.nextTick()：
+// process.nextTick()将在下一轮事件循环中调用:
+process.nextTick(function () {
+    console.log('nextTick callback!');
+});
+console.log('nextTick was set!');
+2>Node.js进程本身的事件就由process对象来处理。如果我们响应exit事件，就可以在程序即将退出时执行某个回调函数：
+// 程序即将退出时的回调函数:
+process.on('exit', function (code) {
+    console.log('about to exit with code: ' + code);
+});
+3.判断JavaScript执行环境
+if (typeof(window) === 'undefined') {
+    console.log('node.js');
+} else {
+    console.log('browser');
+}
+二，基本模块
+1.fs
+Node.js内置的fs模块就是文件系统模块,负责读写文件,同时提供了异步和同步的方法。
+1>异步读文件
+fs.readFile('sample.txt', 'utf-8', function (err, data) {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log(data);
+    }
+}
+2>同步读文件
+try {
+    var data = fs.readFileSync('sample.txt', 'utf-8');
+    console.log(data);
+} catch (err) {
+    // 出错了
+}
+3>写文件
+异步
+将数据写入文件是通过fs.writeFile()实现的：()
+var data = 'Hello, Node.js';
+fs.writeFile('output.txt', data, function (err) {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log('ok.');
+    }
+});
+同步
+var data = 'Hello, Node.js';
+fs.writeFileSync('output.txt', data);
+4>stat
+如果我们要获取文件大小，创建时间等信息，可以使用fs.stat()，它返回一个Stat对象，能告诉我们文件或目录的详细信息：
+fs.stat('sample.txt', function (err, stat) {
+    if (err) {
+        console.log(err);
+    } else {
+        // 是否是文件:
+        console.log('isFile: ' + stat.isFile());
+        // 是否是目录:
+        console.log('isDirectory: ' + stat.isDirectory());
+        if (stat.isFile()) {
+            // 文件大小:
+            console.log('size: ' + stat.size);
+            // 创建时间, Date对象:
+            console.log('birth time: ' + stat.birthtime);
+            // 修改时间, Date对象:
+            console.log('modified time: ' + stat.mtime);
+        }
+    }
+});	
+2.stream
+1>stream是Node.js提供的又一个仅在服务区端可用的模块，目的是支持“流”这种数据结构。
+
+// 打开一个流:
+var rs = fs.createReadStream('sample.txt', 'utf-8');
+rs.on('data', function (chunk) {
+    console.log('DATA:')
+    console.log(chunk);
+});
+rs.on('end', function () {
+    console.log('END');
+});
+//写入数据
+var ws1 = fs.createWriteStream('output1.txt', 'utf-8');
+ws1.write('使用Stream写入文本数据...\n');
+ws1.write('END.');
+ws1.end();
+pipe
+就像可以把两个水管串成一个更长的水管一样，两个流也可以串起来。一个Readable流和一个Writable流串起来后，所有的数据自动从Readable流进入Writable流，这种操作叫pipe。
+用pipe()把一个文件流和另一个文件流串起来，这样源文件的所有数据就自动写入到目标文件里了，所以，这实际上是一个复制文件的程序
+let rs = fs.createReadStream('sample.txt');
+let ws = fs.createWriteStream('copied.txt');
+rs.pipe(ws);
+使用unpipe方法取消目标文件的写入操作
+rs.pipe(ws,{end:false})
+setTimeout(function () {
+        rs.unpipe(ws)
+},10)
+////////////////////TCP///////////////////
+ const net = require('net')
+创建tcp服务端
+const server = net.createServer(function (socket) {
+   server.getConnections(function (err,count) {
+        console.log('当前已有%d个客户链接',count)
+        server.maxConnections = 5
+    })
+})
+server.on('connection',function (socket) { //客户端与服务器端连接已建立
+    socket.on('data',function (data) { // 接收到客户端数据
+        console.log(data.toString())
+    })
+})
+server.listen(8431,function () {
+    let address = server.address()//使用address方法查看TCP服务器监听的地址信息
+    console.log('被监听的地址信息为%j',address)
+})
+创建tcp客户端
+ const client = new net.Socket()
+ client.setEncoding('utf8')
+ client.connect(8431,'localhost',function () {
+     console.log('已连接到服务器')
+     client.write('你好')
+ })
+ client.on('data',function (data) {
+     console.log('已接收到服务端发送的数据' + data)
+ })
+http服务端
+const server = http.createServer(function (req,res) {// 创建http server,req客户端请求，res服务器端响应对象。
+req.on('data',function (data) { console.log(decodeURIComponent(data))})//获取客户端请求信息
+req.on('end',function () { console.log('已全部接收完毕')})
+//发送服务器端响应流
+res.writeHead(200,{'Content-Type':'text/plain','Access-Control-Allow-Origin':'*'})
+  res.write('数据')
+res.end()
+});
+server.listen(8080);// 让服务器监听8080端口:
+http客户端
+const req = http.request(options,function (res) {
+    res.on('data',function (data) {console.log('客户端接收到数据',data)})
+})
+req.write('nihao')//客户端发送数据
+req.end('zaijian')
+使用get方法向其他网站请求数据
+const req = http.get(options,function (res) {console.log(res)})

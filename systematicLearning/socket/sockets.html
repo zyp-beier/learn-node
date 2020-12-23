@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>sockets</title>
+        </head>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket = io.connect()
+            socket.on('login',function (names) {
+                let str = ''
+                names.forEach(item => {
+                    str = '用户' + item + '已登录'
+                })
+                document.getElementById('result').innerText = str
+            })
+            function add() {
+                socket.emit('login',document.querySelector('#nickName').value)
+            }
+        </script>
+<body>
+<div>
+   用户名 <input type="text" id="nickName">
+    <input type="button" value="登录" onclick="add()">
+    <output id="result"></output>
+</div>
+</body>
+</html>

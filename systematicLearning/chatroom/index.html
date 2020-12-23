@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>聊天室</title>
+    <style>
+        h1{
+            font-family: Arial,Helvetica,sans-serif;
+            font-weight: bold;
+            font-size: 14pt;
+            color: #006bb5;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            border: 1px solid #f0f0f0;
+            padding: 5px;
+            margin-bottom: 18px;
+        }
+        div[class^=divContainer]{
+            border: 0;
+            margin: 10px 0;
+            padding: 3px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .divLeft{
+            width: 85%;
+            background-color: #f0f0f0;
+            float:left;
+        }
+        .divRight{
+            float: right;
+            width: 15%;
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .divchat{
+            border: 0;
+            margin: 10px 0;
+            padding: 3px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            position: relative;
+            overflow: auto;
+            height: 300px;
+            font-size: 12px;
+        }
+        table.tbDlg{
+            font-family: Arial,Helvetica,sans-serif;
+            font-weight: normal;
+            font-size: 12px;
+            background-color: #f0f0f0;
+        }
+        tr.trDlg,td.tbDlg{
+            background-color: #f0f0f0;
+            font-size: 10px;
+        }
+        textarea{
+            font-family: inherit;
+            font-size: 10pt;
+            border: 1px solid #444;
+            background-color: white;
+            width:100%;
+        }
+        input[type='button']{
+            font-family: inherit;
+            margin: 1px;
+            border-radius: 10px;
+            border: 1px solid #808080;
+            background-color: #81a0b5;
+            color: white;
+            width:100px;
+        }
+        input[type='button']:hover{
+            margin: 1px;
+            background-color: #006bb5;
+        }
+        input[type='button']:active{
+            margin: 1px;
+            font-weight: bold;
+            background-color: #006bb5;
+        }
+        input[type='button']:focus{
+            margin: 0;
+            font-weight: bold;
+            background-color: #006bb5;
+        }
+
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+<!--    <script src="index.js"></script>-->
+    <script>
+        let userName,socket,tbxUsername,tbxMsg,divChat
+        function window_onload() {
+            divChat = document.querySelector('.divchat')
+            tbxUsername = document.querySelector('.tbxUsername')
+            tbxMsg = document.querySelector('.tbxMsg')
+            tbxUsername.focus()
+            tbxUsername.select()
+        }
+
+        function addMsg(msg) {
+            divChat.innerHTML += msg + '<br>'
+            if(divChat.scrollHeight > divChat.clientHeight){
+                divChat.scrollTop = divChat.scrollHeight-divChat.clientHeight
+            }
+        }
+
+        function btnLogin_onclick() {
+            if(tbxUsername.value.trim()==''){
+                alert('请输入用户名')
+                return
+            }
+            userName = tbxUsername.value.trim()
+            socket = io.connect()
+            socket.on('connect',function () {
+                addMsg('与聊天服务器的连接已经建立')
+                socket.on('login',function (name) {
+                    addMsg('欢迎用户' + name + '进入聊天室')
+                })
+                socket.on('sendClients',function (names) {
+                    const divRight = document.querySelector('.divRight')
+                    let str = ''
+                    names.forEach(item => {
+                        str += item + '<br>'
+                    })
+                    divRight.innerHTML = '用户列表' + '<br>'
+                    divRight.innerHTML += str
+                })
+                socket.on('chat',function (data) {
+                    addMsg(data.userName + '说' + data.msg)
+                })
+                socket.on('disconnect',function () {
+                    addMsg('与聊天服务器连接已断开')
+                    document.querySelector('.btnSend').disabled = true
+                    document.querySelector('.btnLogout').disabled = true
+                    document.querySelector('.btnLogin').disabled = ''
+                    const divRight = document.querySelector('.divRight')
+                    divRight.innerHTML = '用户列表'
+                })
+                socket.on('logout',function (name) {
+                    addMsg('用户' + name + '已退出聊天室')
+                })
+                socket.on('duplicate',function () {
+                    alert('该用户名已经被使用')
+                    document.querySelector('.btnSend').disabled = true
+                    document.querySelector('.btnLogout').disabled = true
+                    document.querySelector('.btnLogin').disabled = ''
+                })
+            })
+            socket.on('error',function (err) {
+                addMsg('与聊天服务器之间的连接发生错误')
+                socket.disconnect()
+                socket.removeAllListeners('connect')
+                io.sockets = {}
+            })
+            socket.emit('login',userName)
+            document.querySelector('.btnSend').disabled = ''
+            document.querySelector('.btnLogout').disabled = ''
+            document.querySelector('.btnLogin').disabled = true
+        }
+        function btnSend_onclick() {
+            let msg = tbxMsg.value
+            if(msg.length>0){
+                socket.emit('chat',{userName:userName,msg: msg})
+                tbxMsg.value = ''
+            }
+        }
+
+        function btnLogout_onclick() {
+            socket.emit('logout',userName)
+            socket.disconnect()
+            socket.removeAllListeners('connect')
+            io.sockets = {}
+            addMsg('用户' + userName + '退出聊天室')
+            const divRight = document.querySelector('.divRight')
+            divRight.innerHTML = '用户列表' + '<br>'
+            document.querySelector('.btnSend').disabled = 'disabled'
+            document.querySelector('.btnLogout').disabled = 'disabled'
+            document.querySelector('.btnLogin').disabled = ''
+
+        }
+
+        function window_onunload() {
+            socket.emit('logout',userName)
+            socket.disconnect()
+        }
+
+    </script>
+</head>
+<body onload="window_onload()" onunload="window_onunload()">
+<h1>
+    Sockct.IO聊天室
+</h1>
+<div class="divContainer1">
+    <table class="tbDlg" border="0" cellpadding="3" cellspacing="0" width="100%">
+        <tr class="trDlg">
+            <td class="tdDlg" width="5">
+                用户名: <input type="text" value="游客" size="20" class="tbxUsername">
+                        <input type="button" value="登录" size="20" class="btnLogin" onclick="btnLogin_onclick()">
+                        <input type="button" value="退出" size="20" class="btnLogout" onclick="btnLogout_onclick()">
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="divLeft">
+    <div class="divchat"></div>
+    <div class="divContainer3">
+        <table class="tbDlg" border="0" cellpadding="3" cellspacing="0" width="100%">
+            <tr class="trDlg">
+                <td v class="tdDlg" nowrap >对话</td>
+                <td v class="tdDlg" nowrap >
+                    <textarea class="tbxMsg" cols="255" rows="5" style="width: 100%"></textarea>
+                </td>
+                <td v class="tdDlg" nowrap >
+                    <input type="button" value="发送" onclick="btnSend_onclick()" class="btnSend">
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="divRight">
+        用户列表:
+</div>
+</body>
+</html>
