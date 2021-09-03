@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  ul
+    each val, index in list
+      li
+        p= index
+        p= val.name
+        p= val.year

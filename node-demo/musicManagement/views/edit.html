@@ -1,0 +1,26 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑</title>
+</head>
+<body>
+  <div class="container">
+    <div>
+      <h1><a href="/index.html">我的音乐</a> <small><%= title %></small></small></h1>
+    </div>
+    <form action="/edit?id=<%= music.id %>" method="POST">
+      <div class="form-group">
+        <label for="title">标题</label>
+        <input type="text" name="title" id="title" placeholder="请输入音乐标题" value="<%= music.title %>">
+      </div>
+      <div class="form-group">
+        <label for="singer">歌手</label>
+        <input type="text" name="singer" id="singer" placeholder="请输入歌手名称" value='<%= music.singer %>'>
+      </div>
+      <button type="submit">确定修改</button>
+    </form>
+  </div>
+</body>
+</html>
